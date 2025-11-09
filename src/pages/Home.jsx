@@ -46,7 +46,7 @@ import { supabase } from "../utils/supabaseClient";
         return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-green-900 text-white">
             {/* Hero Section */}
-            <div className="relative overflow-hidden">>
+            <div className="relative overflow-hidden">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                     <div className="flex-1">
                         <h1 className="text-4xl font-extrabold mb-3 text-green-700">Recupera el control de tu salud</h1>
