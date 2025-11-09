@@ -1,6 +1,6 @@
 // Alex_fit/src/App.jsx
 import React from "react";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import './styles/tailwind.css';
 import './styles/globals.css';
 import Home from "./pages/Home";
@@ -41,20 +41,18 @@ import Sidebar from "./components/Sidebar";
 
     export default function App() {
         return (
-            <Router>
-                <Routes>
-                    {/* Rutas públicas */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/registro-datos" element={<RegistroDatos />} />
+            <Routes>
+            {/* Rutas públicas */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/registro-datos" element={<RegistroDatos />} />
 
-                    {/* Rutas protegidas con dashboard */}
-                    <Route path="/app/*" element={<DashboardLayout />} />
+            {/* Rutas protegidas con dashboard */}
+            <Route path="/app/*" element={<DashboardLayout />} />
 
-                    {/* Ruta 404 */}
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-            </Router>
+            {/* Ruta 404 */}
+            <Route path="*" element={<NotFound />} />
+            </Routes>
         );
     }
