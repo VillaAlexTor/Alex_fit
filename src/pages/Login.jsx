@@ -13,20 +13,34 @@ export default function Login() {
 
     const handleOAuthLogin = async (provider) => {
         setErrorMsg("");
-        const { error } = await supabase.auth.signInWithOAuth({ provider });
-        if (error) setErrorMsg(traducirError(error.message));
+        setLoading(true);
+        const { data, error } = await supabase.auth.signInWithOAuth({ 
+            provider,
+            options: {
+                redirectTo: `${window.location.origin}/`
+            }
+        });
+        setLoading(false);
+        if (error) {
+            setErrorMsg(traducirError(error.message));
+        }
     };
 
     const handleEmailLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrorMsg("");
-
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         setLoading(false);
-
         if (error) {
-            setErrorMsg(traducirError(error.message));
+            // Mensajes más específicos
+            if (error.message.includes('Email not confirmed')) {
+                setErrorMsg('Por favor confirma tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.');
+            } else if (error.message.includes('Invalid login credentials')) {
+                setErrorMsg('Correo o contraseña incorrectos. Si acabas de registrarte, confirma tu correo primero.');
+            } else {
+                setErrorMsg(traducirError(error.message));
+            }
             return;
         }
     };
@@ -37,14 +51,17 @@ export default function Login() {
                 <h1 className="text-2xl font-bold mb-4 text-center">Iniciar sesión en Alex_Fit</h1>
 
                 {errorMsg && (
-                    <div className="bg-red-100 text-red-800 p-2 rounded mb-4">{errorMsg}</div>
+                    <div className="bg-red-100 text-red-800 p-3 rounded mb-4 text-sm">
+                        {errorMsg}
+                    </div>
                 )}
 
                 <div className="flex flex-col gap-4 mb-6">
                     <button
                         type="button"
                         onClick={() => handleOAuthLogin('google')}
-                        className="flex items-center justify-center gap-2 w-full bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        disabled={loading}
+                        className="flex items-center justify-center gap-2 w-full bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -52,17 +69,18 @@ export default function Login() {
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                         </svg>
-                        Continuar con Google
+                        {loading ? "Conectando..." : "Continuar con Google"}
                     </button>
                     <button
                         type="button"
                         onClick={() => handleOAuthLogin('facebook')}
-                        className="flex items-center justify-center gap-2 w-full bg-[#1877F2] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        disabled={loading}
+                        className="flex items-center justify-center gap-2 w-full bg-[#1877F2] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                         </svg>
-                        Continuar con Facebook
+                        {loading ? "Conectando..." : "Continuar con Facebook"}
                     </button>
                 </div>
 
@@ -100,24 +118,6 @@ export default function Login() {
                         {loading ? "Iniciando..." : "Iniciar con correo"}
                     </button>
                 </form>
-
-                <div className="my-4 border-t pt-4">
-                    <p className="text-center text-sm text-gray-500 mb-3">O inicia sesión con</p>
-                    <div className="flex gap-3 justify-center">
-                        <button
-                            onClick={() => handleOAuthLogin("google")}
-                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                        >
-                            Google
-                        </button>
-                        <button
-                            onClick={() => handleOAuthLogin("facebook")}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                        >
-                            Facebook
-                        </button>
-                    </div>
-                </div>
 
                 <p className="text-sm text-center mt-4">
                     ¿No tienes cuenta? <Link to="/register" className="text-green-600 font-semibold">Crear cuenta</Link>
