@@ -1,3 +1,4 @@
+/* Alex_fit/src/pages/Dashboard/Progreso.jsx */
 import React from "react";
 
 export default function Progreso() {

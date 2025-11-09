@@ -1,3 +1,4 @@
+/* Alex_fit/src/pages/Register.jsx */
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "../utils/supabaseClient";

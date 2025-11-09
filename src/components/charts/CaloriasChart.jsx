@@ -1,0 +1,1 @@
+/* Alex_fit/src/components/charts/CaloriasChart.jsx */

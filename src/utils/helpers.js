@@ -1,3 +1,4 @@
+// Alex_fit/src/utils/helpers.js
 // Formatear fecha a formato local
 export const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-ES', {

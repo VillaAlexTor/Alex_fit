@@ -1,3 +1,4 @@
+/* Alex_fit/src/components/forms/EjercicioForm.jsx */
 import React, { useState } from "react";
 import { supabase } from "../../utils/supabaseClient";
 

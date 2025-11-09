@@ -1,3 +1,4 @@
+/* Alex_fit/src/components/forms/ComidaForm.jsx */
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../utils/supabaseClient";
 

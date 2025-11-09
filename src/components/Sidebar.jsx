@@ -1,3 +1,4 @@
+/* Alex_fit/src/components/Sidebar.jsx */
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Home, Dumbbell, Apple, BarChart2, User } from "lucide-react";

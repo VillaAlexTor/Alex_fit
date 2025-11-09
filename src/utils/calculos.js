@@ -1,3 +1,4 @@
+// Alex_fit/src/utils/calculos.js
 // Calcular Tasa Metabólica Basal (TMB)
 export const calcularTMB = (peso, altura, edad, genero) => {
   if (genero === 'masculino') {

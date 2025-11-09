@@ -1,3 +1,4 @@
+/* Alex_fit/src/pages/RegistroDatos.jsx */
 import React, { useState, useContext } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { AuthContext } from "../context/AuthContext.jsx";

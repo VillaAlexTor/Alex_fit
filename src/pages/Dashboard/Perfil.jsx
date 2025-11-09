@@ -1,3 +1,4 @@
+/* Alex_fit/src/pages/Dashboard/Perfil.jsx */
 import React from "react";
 import { supabase } from "../../utils/supabaseClient";
 export default function Perfil() {

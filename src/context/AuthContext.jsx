@@ -1,3 +1,4 @@
+/* Alex_fit/src/context/AuthContext.jsx */
 import React, { createContext, useState, useEffect } from "react";
 import { supabase } from "../utils/supabaseClient";
 
