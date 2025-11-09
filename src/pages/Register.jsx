@@ -33,20 +33,19 @@ export default function Register() {
         // Crear usuario con Supabase
         const { data, error } = await supabase.auth.signUp({ email, password });
 
-        setLoading(false);
-
         if (error) {
             setErrorMsg(traducirError(error.message));
+            setLoading(false);
             return;
         }
 
-        // Si la signUp devuelve sesión automática, redirigimos; si no, redirigimos a login
-        // Intentamos loguear directamente para darle acceso inmediato
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (!signInError) {
-            navigate("/app/");
-        } else {
-            // Si requiere confirmación por email, llevar a login con mensaje
+        // Intentar login automático
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+            email, 
+            password 
+        });
+        setLoading(false);
+        if (signInError) {
             setErrorMsg('Registro completado. Revisa tu correo para confirmar la cuenta.');
             navigate("/login");
         }

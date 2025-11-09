@@ -42,19 +42,19 @@ import Sidebar from "./components/Sidebar";
     export default function App() {
         return (
             <Router>
-            <Routes>
-                {/* Rutas públicas (sin layout de dashboard) */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/registro-datos" element={<RegistroDatos />} />
+                <Routes>
+                    {/* Rutas públicas */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/registro-datos" element={<RegistroDatos />} />
 
-                {/* Rutas con layout de dashboard (mount en /app/*) */}
-                <Route path="/app/*" element={<DashboardLayout />} />
+                    {/* Rutas protegidas con dashboard */}
+                    <Route path="/app/*" element={<DashboardLayout />} />
 
-                {/* Ruta 404 */}
-                <Route path="*" element={<NotFound />} />
-            </Routes>
+                    {/* Ruta 404 */}
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
             </Router>
         );
     }

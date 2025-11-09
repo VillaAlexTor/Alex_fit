@@ -29,9 +29,6 @@ export default function Login() {
             setErrorMsg(traducirError(error.message));
             return;
         }
-
-        // Redirect to app
-        navigate("/app/");
     };
 
     return (
