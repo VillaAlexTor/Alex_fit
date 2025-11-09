@@ -84,7 +84,7 @@ export default function Home() {
                             <span className="text-sm text-emerald-300">Tu salud, bajo control</span>
                         </div>
                         
-                        <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-tight">
+                        <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-tight text-white">
                             Transforma tu 
                             <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent"> salud</span>
                             <br />
@@ -164,7 +164,7 @@ export default function Home() {
                         <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                                <h3 className="font-bold text-lg">Panel de Progreso</h3>
+                                <h3 className="font-bold text-lg text-white">Panel de Progreso</h3>
                             </div>
                             
                             <div className="space-y-6">
