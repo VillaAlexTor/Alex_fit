@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tipografía y colores base */
+body {
+    @apply bg-light text-gray-900 font-sans;
+}
+
+h1, h2, h3, h4 {
+    @apply font-bold text-dark;
+}
+
+a {
+    @apply text-primary hover:underline;
+}
+
+/* Contenedor base */
+.container {
+    @apply mx-auto px-4;
+}
+
+/* Tarjetas */
+.card {
+    @apply bg-white shadow-card rounded-2xl p-6 transition-transform hover:scale-[1.01];
+}
+
+/* Botones */
+.btn {
+    @apply px-4 py-2 rounded-xl font-semibold text-white bg-primary hover:bg-green-600 transition-all;
+}
+
+.btn-secondary {
+    @apply px-4 py-2 rounded-xl font-semibold text-white bg-secondary hover:bg-blue-700 transition-all;
+}
+
+/* Inputs */
+input, select, textarea {
+    @apply border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary;
+}
