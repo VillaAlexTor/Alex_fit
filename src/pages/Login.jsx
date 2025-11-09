@@ -14,18 +14,26 @@ export default function Login() {
     const handleOAuthLogin = async (provider) => {
         setErrorMsg("");
         setLoading(true);
+        
+        // Determinar la URL base correcta
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseUrl = isGitHubPages 
+            ? 'https://villaalextor.github.io/Alex_fit/'
+            : window.location.origin + '/';
+        
         const { data, error } = await supabase.auth.signInWithOAuth({ 
             provider,
             options: {
-                redirectTo: `${window.location.origin}/`
+                redirectTo: baseUrl
             }
         });
+        
         setLoading(false);
+        
         if (error) {
             setErrorMsg(traducirError(error.message));
         }
     };
-
     const handleEmailLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
