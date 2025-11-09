@@ -9,8 +9,10 @@ import "./styles/globals.css";
 
     ReactDOM.createRoot(document.getElementById("app")).render(
         <React.StrictMode>
+            <Router>
             <AuthProvider>
-            <App />
+                <App />
             </AuthProvider>
+            </Router>
         </React.StrictMode>
     );
