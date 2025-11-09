@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import AuthProvider from "./context/AuthContext.jsx";
-// Tailwind y estilos globales
+import { HashRouter as Router } from "react-router-dom";
 import "./styles/tailwind.css";
 import "./styles/globals.css";
 
