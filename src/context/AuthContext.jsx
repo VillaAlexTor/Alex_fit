@@ -35,19 +35,10 @@ export default function AuthProvider({ children }) {
 
                 if (!error && userData) {
                     setUserData(userData);
-                    // Si ya tiene datos Y está en registro-datos, redirigir al dashboard
-                    if (location.pathname === '/registro-datos') {
-                        navigate("/app/nutricion");
-                    }
                 } else {
-                    // Si no tiene datos Y NO está en registro-datos, redirigir al registro de datos
                     setUserData(null);
-                    if (location.pathname !== '/registro-datos' && !location.pathname.startsWith('/app')) {
-                        navigate("/registro-datos");
-                    }
                 }
             } else {
-                // NO HAY USUARIO - No redirigir nada
                 setUser(null);
                 setUserData(null);
             }
@@ -63,7 +54,7 @@ export default function AuthProvider({ children }) {
 
             console.log('Auth state changed:', event, session?.user?.email);
 
-            if (session?.user) {
+            if (event === 'SIGNED_IN' && session?.user) {
                 setUser(session.user);
                 
                 // Verificar datos del usuario después del login
@@ -75,17 +66,21 @@ export default function AuthProvider({ children }) {
 
                 if (userData) {
                     setUserData(userData);
-                    // Si ya tiene datos, redirigir al dashboard
-                    navigate("/app/nutricion");
+                    // Solo redirigir si NO está en una ruta del dashboard
+                    if (!location.pathname.startsWith('/app')) {
+                        navigate("/app/nutricion");
+                    }
                 } else {
-                    // Si no tiene datos, redirigir al registro
                     setUserData(null);
-                    navigate("/registro-datos");
+                    // Solo redirigir si NO está ya en registro-datos
+                    if (location.pathname !== '/registro-datos') {
+                        navigate("/registro-datos");
+                    }
                 }
-            } else {
-                // Usuario cerró sesión - redirigir al home
+            } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setUserData(null);
+                // Solo redirigir a home si está en rutas protegidas
                 if (location.pathname.startsWith('/app') || location.pathname === '/registro-datos') {
                     navigate("/");
                 }
@@ -98,13 +93,13 @@ export default function AuthProvider({ children }) {
         };
     }, [navigate, location.pathname]);
 
-    // Mostrar un loading mientras verifica la sesión
+    // Mostrar loading solo al inicio
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Cargando...</p>
+                    <p className="text-gray-600">Verificando sesión...</p>
                 </div>
             </div>
         );
