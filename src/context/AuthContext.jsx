@@ -1,7 +1,6 @@
 // Alex_fit/src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -9,8 +8,6 @@ export default function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
-    const location = useLocation();
 
     useEffect(() => {
         let mounted = true;
@@ -54,10 +51,10 @@ export default function AuthProvider({ children }) {
 
             console.log('Auth state changed:', event, session?.user?.email);
 
-            if (event === 'SIGNED_IN' && session?.user) {
+            if (session?.user) {
                 setUser(session.user);
                 
-                // Verificar datos del usuario después del login
+                // Verificar datos del usuario
                 const { data: userData } = await supabase
                     .from("usuarios")
                     .select("*")
@@ -66,24 +63,12 @@ export default function AuthProvider({ children }) {
 
                 if (userData) {
                     setUserData(userData);
-                    // Solo redirigir si NO está en una ruta del dashboard
-                    if (!location.pathname.startsWith('/app')) {
-                        navigate("/app/nutricion");
-                    }
                 } else {
                     setUserData(null);
-                    // Solo redirigir si NO está ya en registro-datos
-                    if (location.pathname !== '/registro-datos') {
-                        navigate("/registro-datos");
-                    }
                 }
-            } else if (event === 'SIGNED_OUT') {
+            } else {
                 setUser(null);
                 setUserData(null);
-                // Solo redirigir a home si está en rutas protegidas
-                if (location.pathname.startsWith('/app') || location.pathname === '/registro-datos') {
-                    navigate("/");
-                }
             }
         });
 
@@ -91,15 +76,14 @@ export default function AuthProvider({ children }) {
             mounted = false;
             subscription.unsubscribe();
         };
-    }, [navigate, location.pathname]);
+    }, []);
 
-    // Mostrar loading solo al inicio
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="flex items-center justify-center min-h-screen bg-gray-900">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Verificando sesión...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+                    <p className="text-gray-300">Verificando sesión...</p>
                 </div>
             </div>
         );
@@ -126,7 +110,6 @@ export default function AuthProvider({ children }) {
     );
 }
 
-// Hook personalizado para usar el contexto
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
