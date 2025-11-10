@@ -61,7 +61,7 @@ export default function AuthProvider({ children }) {
             let { data: existingUser, error } = await supabase
                 .from("usuarios")
                 .select("*")
-                .eq("auth_id", supabaseUser.id)
+                .eq("auth_id", `"${supabaseUser.id}"`)
                 .single();
 
             // Si no existe, intentar buscar por email (por si ya tenía cuenta previa)
@@ -133,7 +133,7 @@ export default function AuthProvider({ children }) {
                         const { data: updatedUserData } = await supabase
                             .from("usuarios")
                             .select("*")
-                            .eq("auth_id", user.id)
+                            .eq("auth_id",  `"${user.id}"`)
                             .single();
                         setUserData(updatedUserData);
                     }
