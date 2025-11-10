@@ -14,32 +14,20 @@ export default function AuthProvider({ children }) {
 
         const checkUserAndData = async () => {
             setLoading(true);
-            
-            // Obtener sesión inicial
+
             const { data: { session } } = await supabase.auth.getSession();
-            
+
             if (!mounted) return;
 
             if (session?.user) {
                 setUser(session.user);
-                
-                // Verificar si el usuario ya tiene datos guardados
-                const { data: userData, error } = await supabase
-                    .from("usuarios")
-                    .select("*")
-                    .eq("id", session.user.id)
-                    .single();
 
-                if (!error && userData) {
-                    setUserData(userData);
-                } else {
-                    setUserData(null);
-                }
+                await ensureUserData(session.user);
             } else {
                 setUser(null);
                 setUserData(null);
             }
-            
+
             setLoading(false);
         };
 
@@ -49,23 +37,11 @@ export default function AuthProvider({ children }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
 
-            console.log('Auth state changed:', event, session?.user?.email);
+            console.log("Auth state changed:", event, session?.user?.email);
 
             if (session?.user) {
                 setUser(session.user);
-                
-                // Verificar datos del usuario
-                const { data: userData } = await supabase
-                    .from("usuarios")
-                    .select("*")
-                    .eq("id", session.user.id)
-                    .single();
-
-                if (userData) {
-                    setUserData(userData);
-                } else {
-                    setUserData(null);
-                }
+                await ensureUserData(session.user);
             } else {
                 setUser(null);
                 setUserData(null);
@@ -77,6 +53,41 @@ export default function AuthProvider({ children }) {
             subscription.unsubscribe();
         };
     }, []);
+
+    // 🧠 Función para verificar y crear datos si no existen
+    const ensureUserData = async (supabaseUser) => {
+        const { data: existingUser, error } = await supabase
+            .from("usuarios")
+            .select("*")
+            .eq("auth_id", supabaseUser.id)
+            .single();
+
+        if (existingUser) {
+            setUserData(existingUser);
+        } else {
+            console.warn("Usuario no encontrado en tabla 'usuarios', creando registro...");
+            const { data: newUser, error: insertError } = await supabase
+                .from("usuarios")
+                .insert([
+                    {
+                        auth_id: supabaseUser.id,
+                        email: supabaseUser.email,
+                        nombre: "",
+                        created_at: new Date(),
+                    },
+                ])
+                .select()
+                .single();
+
+            if (!insertError) {
+                setUserData(newUser);
+            } else {
+                console.error("Error al crear usuario:", insertError);
+                setUserData(null);
+            }
+        }
+    };
+
 
     if (loading) {
         return (
@@ -90,21 +101,23 @@ export default function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            userData, 
-            loading,
-            refreshUserData: async () => {
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from("usuarios")
-                        .select("*")
-                        .eq("id", user.id)
-                        .single();
-                    setUserData(userData);
-                }
-            }
-        }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                userData,
+                loading,
+                refreshUserData: async () => {
+                    if (user) {
+                        const { data: updatedUserData } = await supabase
+                            .from("usuarios")
+                            .select("*")
+                            .eq("auth_id", user.id)
+                            .single();
+                        setUserData(updatedUserData);
+                    }
+                },
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
@@ -113,7 +126,7 @@ export default function AuthProvider({ children }) {
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+        throw new Error("useAuth debe ser usado dentro de un AuthProvider");
     }
     return context;
 };
