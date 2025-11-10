@@ -56,35 +56,57 @@ export default function AuthProvider({ children }) {
 
     // 🧠 Función para verificar y crear datos si no existen
     const ensureUserData = async (supabaseUser) => {
-        const { data: existingUser, error } = await supabase
-            .from("usuarios")
-            .select("*")
-            .eq("auth_id", supabaseUser.id)
-            .single();
-
-        if (existingUser) {
-            setUserData(existingUser);
-        } else {
-            console.warn("Usuario no encontrado en tabla 'usuarios', creando registro...");
-            const { data: newUser, error: insertError } = await supabase
+        try {
+            // Intentar encontrar el usuario por auth_id
+            let { data: existingUser, error } = await supabase
                 .from("usuarios")
-                .insert([
-                    {
-                        auth_id: supabaseUser.id,
-                        email: supabaseUser.email,
-                        nombre: "",
-                        created_at: new Date(),
-                    },
-                ])
-                .select()
+                .select("*")
+                .eq("auth_id", supabaseUser.id)
                 .single();
 
-            if (!insertError) {
-                setUserData(newUser);
-            } else {
-                console.error("Error al crear usuario:", insertError);
-                setUserData(null);
+            // Si no existe, intentar buscar por email (por si ya tenía cuenta previa)
+            if (!existingUser) {
+                const { data: sameEmailUser } = await supabase
+                    .from("usuarios")
+                    .select("*")
+                    .eq("email", supabaseUser.email)
+                    .single();
+
+                if (sameEmailUser) {
+                    // Actualizar auth_id si el email coincide
+                    await supabase
+                        .from("usuarios")
+                        .update({ auth_id: supabaseUser.id })
+                        .eq("email", supabaseUser.email);
+                    existingUser = sameEmailUser;
+                }
             }
+
+            // Si todavía no existe, crearlo
+            if (!existingUser) {
+                const { data: newUser, error: insertError } = await supabase
+                    .from("usuarios")
+                    .insert([
+                        {
+                            auth_id: supabaseUser.id,
+                            email: supabaseUser.email,
+                            nombre: supabaseUser.user_metadata.full_name || "",
+                            created_at: new Date(),
+                        },
+                    ])
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+                existingUser = newUser;
+            }
+
+            setUserData(existingUser);
+        } catch (e) {
+            console.error("Error en ensureUserData:", e);
+            setUserData(null);
+        } finally {
+            setLoading(false);
         }
     };
 
