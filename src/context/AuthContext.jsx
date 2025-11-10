@@ -1,7 +1,7 @@
 // Alex_fit/src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -10,6 +10,7 @@ export default function AuthProvider({ children }) {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         let mounted = true;
@@ -34,17 +35,19 @@ export default function AuthProvider({ children }) {
 
                 if (!error && userData) {
                     setUserData(userData);
-                    // Si ya tiene datos, redirigir al dashboard
-                    if (window.location.pathname === '/registro-datos') {
+                    // Si ya tiene datos Y está en registro-datos, redirigir al dashboard
+                    if (location.pathname === '/registro-datos') {
                         navigate("/app/nutricion");
                     }
                 } else {
-                    // Si no tiene datos, redirigir al registro de datos
-                    if (window.location.pathname !== '/registro-datos') {
+                    // Si no tiene datos Y NO está en registro-datos, redirigir al registro de datos
+                    setUserData(null);
+                    if (location.pathname !== '/registro-datos' && !location.pathname.startsWith('/app')) {
                         navigate("/registro-datos");
                     }
                 }
             } else {
+                // NO HAY USUARIO - No redirigir nada
                 setUser(null);
                 setUserData(null);
             }
@@ -58,6 +61,8 @@ export default function AuthProvider({ children }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
 
+            console.log('Auth state changed:', event, session?.user?.email);
+
             if (session?.user) {
                 setUser(session.user);
                 
@@ -70,18 +75,20 @@ export default function AuthProvider({ children }) {
 
                 if (userData) {
                     setUserData(userData);
-                    // Si ya tiene datos y está en registro-datos, redirigir al dashboard
-                    if (window.location.pathname === '/registro-datos') {
-                        navigate("/app/nutricion");
-                    }
+                    // Si ya tiene datos, redirigir al dashboard
+                    navigate("/app/nutricion");
                 } else {
                     // Si no tiene datos, redirigir al registro
                     setUserData(null);
                     navigate("/registro-datos");
                 }
             } else {
+                // Usuario cerró sesión - redirigir al home
                 setUser(null);
                 setUserData(null);
+                if (location.pathname.startsWith('/app') || location.pathname === '/registro-datos') {
+                    navigate("/");
+                }
             }
         });
 
@@ -89,7 +96,19 @@ export default function AuthProvider({ children }) {
             mounted = false;
             subscription.unsubscribe();
         };
-    }, [navigate]);
+    }, [navigate, location.pathname]);
+
+    // Mostrar un loading mientras verifica la sesión
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Cargando...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={{ 
