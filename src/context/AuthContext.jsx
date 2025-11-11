@@ -10,16 +10,14 @@ export const AuthContext = createContext();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let mounted = true;
-
+        // 🔹 Inicializa sesión al cargar
         const initAuth = async () => {
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        const session = data?.session;
 
         if (session?.user) {
             setUser(session.user);
-            await createUserIfNotExists(session.user);
+            await crearUsuarioSiNoExiste(session.user);
         } else {
             setUser(null);
             setUserData(null);
@@ -30,13 +28,13 @@ export const AuthContext = createContext();
 
         initAuth();
 
-        // Suscripción a cambios de sesión
+        // 🔹 Escucha cambios en el estado de autenticación
         const { data: listener } = supabase.auth.onAuthStateChange(
         async (event, session) => {
             console.log("Auth state changed:", event, session?.user?.email);
             if (session?.user) {
             setUser(session.user);
-            await createUserIfNotExists(session.user);
+            await crearUsuarioSiNoExiste(session.user);
             } else {
             setUser(null);
             setUserData(null);
@@ -45,43 +43,51 @@ export const AuthContext = createContext();
         );
 
         return () => {
-        mounted = false;
         listener.subscription.unsubscribe();
         };
     }, []);
 
-    const createUserIfNotExists = async (supabaseUser) => {
+    // ✅ Crea o actualiza el usuario si no existe
+    const crearUsuarioSiNoExiste = async (supabaseUser) => {
         try {
-        const { data: existing } = await supabase
+            // 🔹 Intentamos crear/actualizar el usuario directamente
+            console.log("Creando o actualizando usuario en la tabla usuarios...");
+            const { data, error } = await supabase
             .from("usuarios")
-            .select("*")
-            .eq("auth_id", supabaseUser.id)
-            .single();
-
-        if (!existing) {
-            const { data: newUser, error } = await supabase
-            .from("usuarios")
-            .insert([
+            .upsert(
                 {
                 auth_id: supabaseUser.id,
                 email: supabaseUser.email,
-                nombre:
-                    supabaseUser.user_metadata.full_name ||
-                    supabaseUser.user_metadata.name ||
-                    "",
+                nombre: supabaseUser.user_metadata?.full_name || "",
                 created_at: new Date(),
                 },
-            ])
+                { onConflict: ["auth_id"], ignoreDuplicates: false }
+            )
             .select()
             .single();
 
             if (error) throw error;
-            setUserData(newUser);
-        } else {
-            setUserData(existing);
-        }
-        } catch (e) {
-        console.error("Error creando usuario:", e.message);
+            setUserData(data);
+        } catch (error) {
+            console.error("Error creando usuario:", error.message);
+
+            // 🔹 Para desarrollo, podemos hacer fallback usando service_role si falla RLS
+            /*
+            const { data } = await supabase
+            .from("usuarios")
+            .upsert(
+                {
+                auth_id: supabaseUser.id,
+                email: supabaseUser.email,
+                nombre: supabaseUser.user_metadata?.full_name || "",
+                created_at: new Date(),
+                },
+                { onConflict: ["auth_id"] }
+            )
+            .select()
+            .single({ schema: "public" }); // solo si se usa servicio
+            setUserData(data);
+            */
         }
     };
 
@@ -96,11 +102,12 @@ export const AuthContext = createContext();
         );
     }
 
-    return (
-        <AuthContext.Provider value={{ user, userData, loading }}>
-        {children}
-        </AuthContext.Provider>
-    );
+        return (
+            <AuthContext.Provider value={{ user, userData, loading }}>
+            {children}
+            </AuthContext.Provider>
+        );
     }
 
+    // Hook para usar en cualquier componente
     export const useAuth = () => useContext(AuthContext);
