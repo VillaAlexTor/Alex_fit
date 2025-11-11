@@ -1,26 +1,26 @@
 /* Alex_fit/src/pages/Home.jsx */
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../utils/supabaseClient";
-
-const handleOAuthLogin = async (provider) => {
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    const baseUrl = isGitHubPages 
-        ? 'https://villaalextor.github.io/Alex_fit/'
-        : window.location.origin + '/';
-    
-    await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-            redirectTo: baseUrl
-        }
-    });
-};
 
 export default function Home() {
     const { user, userData } = useAuth();
     const navigate = useNavigate();
+
+    const handleOAuthLogin = async (provider) => {
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseUrl = isGitHubPages 
+            ? 'https://villaalextor.github.io/Alex_fit/'
+            : window.location.origin + '/';
+        
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: { redirectTo: baseUrl },
+        });
+
+        if (error) console.error("Error en OAuth:", error.message);
+    };
 
     // Estados para la demo interactiva
     const [showDemo, setShowDemo] = useState(false);
