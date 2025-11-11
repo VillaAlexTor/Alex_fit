@@ -69,15 +69,14 @@ export default function Home() {
     };
 
     const handleEmpezar = () => {
-        if (userData) {
-            // Si ya tiene datos, ir al dashboard
+        if (user) {
+            // Usuario logueado - ProtectedRoute manejará la redirección
             navigate("/app/nutricion");
         } else {
-            // Si no tiene datos, ir a registro de datos
-            navigate("/registro-datos");
+            // Usuario no logueado - mostrar botones de login
+            setShowDemo(true);
         }
     };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-900 text-white overflow-hidden">
             {/* Background Elements */}
@@ -164,8 +163,21 @@ export default function Home() {
                             ))}
                         </div>
 
-                        {/* Auth Buttons - Condicionalmente */}
-                        {!user && (
+                        {/* Botón Principal - Condicional para usuarios logueados vs no logueados */}
+                        {user ? (
+                            // USUARIO LOGUEADO - Botón grande "Comenzar/Continuar Mi Plan"
+                            <div className="flex justify-center lg:justify-start">
+                                <button 
+                                onClick={handleEmpezar}
+                                className="group relative bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-12 py-6 rounded-2xl font-bold text-xl hover:shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
+                                >
+                                <span className="flex items-center gap-3">
+                                    🚀 {userData?.formulario_completo ? "Continuar Mi Plan" : "Comenzar Mi Plan"}
+                                </span>
+                                </button>
+                            </div>
+                            ) : (
+                            // USUARIO NO LOGUEADO - Botones de OAuth originales
                             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                                 <button 
                                 onClick={() => handleOAuthLogin('facebook')} 

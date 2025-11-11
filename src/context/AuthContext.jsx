@@ -30,16 +30,19 @@ export const AuthContext = createContext();
 
         // 🔹 Escucha cambios en el estado de autenticación
         const { data: listener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-            console.log("Auth state changed:", event, session?.user?.email);
-            if (session?.user) {
-            setUser(session.user);
-            await crearUsuarioSiNoExiste(session.user);
-            } else {
-            setUser(null);
-            setUserData(null);
+            async (event, session) => {
+                console.log("Auth state changed:", event, session?.user?.email);
+                if (session?.user) {
+                setUser(session.user);
+                const userData = await crearUsuarioSiNoExiste(session.user);
+                if (userData) {
+                    await fetchUserData(session.user);
+                }
+                } else {
+                setUser(null);
+                setUserData(null);
+                }
             }
-        }
         );
 
         return () => {
@@ -70,24 +73,23 @@ export const AuthContext = createContext();
             setUserData(data);
         } catch (error) {
             console.error("Error creando usuario:", error.message);
-
-            // 🔹 Para desarrollo, podemos hacer fallback usando service_role si falla RLS
-            /*
-            const { data } = await supabase
+        }
+    };
+    const fetchUserData = async (supabaseUser) => {
+        try {
+            const { data, error } = await supabase
             .from("usuarios")
-            .upsert(
-                {
-                auth_id: supabaseUser.id,
-                email: supabaseUser.email,
-                nombre: supabaseUser.user_metadata?.full_name || "",
-                created_at: new Date(),
-                },
-                { onConflict: ["auth_id"] }
-            )
-            .select()
-            .single({ schema: "public" }); // solo si se usa servicio
+            .select("*")
+            .eq("auth_id", supabaseUser.id)
+            .single();
+
+            if (error) throw error;
+            
             setUserData(data);
-            */
+            return data;
+        } catch (error) {
+            console.error("Error fetching user data:", error.message);
+            return null;
         }
     };
 

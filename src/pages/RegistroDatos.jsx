@@ -49,13 +49,6 @@ export default function RegistroDatos() {
         });
     };
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -68,47 +61,58 @@ export default function RegistroDatos() {
         }
 
         try {
-            // Guardar datos del usuario
-            const { data, error } = await supabase
-                .from("usuarios")
-                .upsert({
-                    id: user.id,
-                    nombre: formData.nombre,
-                    email: user.email,
-                    edad: parseInt(formData.edad),
-                    peso: parseFloat(formData.peso),
-                    altura: parseFloat(formData.altura),
-                    genero: formData.genero,
-                    nivel_actividad: formData.nivelActividad,
-                    objetivo: formData.objetivo,
-                    meta_peso: parseFloat(formData.metaPeso) || null,
-                    tmb: calculos?.tmb,
-                    calorias_objetivo: calculos?.caloriasDiarias,
-                    proteinas_objetivo: calculos?.macros?.proteinas,
-                    carbohidratos_objetivo: calculos?.macros?.carbohidratos,
-                    grasas_objetivo: calculos?.macros?.grasas
-                }, { 
-                    onConflict: ['id'],
-                    ignoreDuplicates: false 
-                });
+            // 🔹 DEBUG: Verificar datos antes de enviar
+            console.log("Enviando datos...", {
+            auth_id: user.id,
+            formulario_completo: true
+            });
 
-            if (error) throw error;
+            // Guardar datos del usuario Y marcar formulario como completo
+            const { data, error } = await supabase
+            .from("usuarios")
+            .upsert({
+                auth_id: user.id,  // ← USAR auth_id, no id
+                nombre: formData.nombre,
+                email: user.email,
+                edad: parseInt(formData.edad),
+                peso: parseFloat(formData.peso),
+                altura: parseFloat(formData.altura),
+                genero: formData.genero,
+                nivel_actividad: formData.nivelActividad,
+                objetivo: formData.objetivo,
+                meta_peso: parseFloat(formData.metaPeso) || null,
+                tmb: calculos?.tmb,
+                calorias_objetivo: calculos?.caloriasDiarias,
+                proteinas_objetivo: calculos?.macros?.proteinas,
+                carbohidratos_objetivo: calculos?.macros?.carbohidratos,
+                grasas_objetivo: calculos?.macros?.grasas,
+                formulario_completo: true  // ← ESTA ES LA LÍNEA CLAVE
+            }, { 
+                onConflict: 'auth_id',  // ← CONFLICT EN auth_id
+                ignoreDuplicates: false 
+            })
+            .select();  // ← IMPORTANTE: Pedir los datos de vuelta
+
+            if (error) {
+            console.error("Error de Supabase:", error);
+            throw error;
+            }
+
+            console.log("✅ Datos guardados:", data);
 
             setMensaje("✅ Datos guardados correctamente");
             
-            // Redirigir al dashboard después de 1.5 segundos
             setTimeout(() => {
-                navigate("/app/nutricion");
+                navigate("/app/nutricion", { replace: true });
             }, 1500);
 
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error completo:", error);
             setMensaje(`❌ Error al guardar: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
-
     // Si el usuario no está autenticado, mostrar mensaje
     if (!user) {
         return (
@@ -120,7 +124,13 @@ export default function RegistroDatos() {
             </div>
         );
     }
-
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
