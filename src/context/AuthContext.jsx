@@ -4,7 +4,7 @@ import { supabase } from "../utils/supabaseClient";
 
 export const AuthContext = createContext();
 
-export default function AuthProvider({ children }) {
+    export default function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -12,143 +12,95 @@ export default function AuthProvider({ children }) {
     useEffect(() => {
         let mounted = true;
 
-        const checkUserAndData = async () => {
-            setLoading(true);
+        const initAuth = async () => {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
 
-            const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            setUser(session.user);
+            await createUserIfNotExists(session.user);
+        } else {
+            setUser(null);
+            setUserData(null);
+        }
 
-            if (!mounted) return;
-
-            if (session?.user) {
-                setUser(session.user);
-
-                await ensureUserData(session.user);
-            } else {
-                setUser(null);
-                setUserData(null);
-            }
-
-            setLoading(false);
+        setLoading(false);
         };
 
-        checkUserAndData();
+        initAuth();
 
-        // Escuchar cambios de autenticación
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (!mounted) return;
-
+        // Suscripción a cambios de sesión
+        const { data: listener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
             console.log("Auth state changed:", event, session?.user?.email);
-
             if (session?.user) {
-                setUser(session.user);
-                await ensureUserData(session.user);
+            setUser(session.user);
+            await createUserIfNotExists(session.user);
             } else {
-                setUser(null);
-                setUserData(null);
+            setUser(null);
+            setUserData(null);
             }
-        });
+        }
+        );
 
         return () => {
-            mounted = false;
-            subscription.unsubscribe();
+        mounted = false;
+        listener.subscription.unsubscribe();
         };
     }, []);
 
-    // 🧠 Función para verificar y crear datos si no existen
-    const ensureUserData = async (supabaseUser) => {
+    const createUserIfNotExists = async (supabaseUser) => {
         try {
-            // Intentar encontrar el usuario por auth_id
-            let { data: existingUser, error } = await supabase
-                .from("usuarios")
-                .select("*")
-                .eq("auth_id", `"${supabaseUser.id}"`)
-                .single();
+        const { data: existing } = await supabase
+            .from("usuarios")
+            .select("*")
+            .eq("auth_id", supabaseUser.id)
+            .single();
 
-            // Si no existe, intentar buscar por email (por si ya tenía cuenta previa)
-            if (!existingUser) {
-                const { data: sameEmailUser } = await supabase
-                    .from("usuarios")
-                    .select("*")
-                    .eq("email", supabaseUser.email)
-                    .single();
+        if (!existing) {
+            const { data: newUser, error } = await supabase
+            .from("usuarios")
+            .insert([
+                {
+                auth_id: supabaseUser.id,
+                email: supabaseUser.email,
+                nombre:
+                    supabaseUser.user_metadata.full_name ||
+                    supabaseUser.user_metadata.name ||
+                    "",
+                created_at: new Date(),
+                },
+            ])
+            .select()
+            .single();
 
-                if (sameEmailUser) {
-                    // Actualizar auth_id si el email coincide
-                    await supabase
-                        .from("usuarios")
-                        .update({ auth_id: supabaseUser.id })
-                        .eq("email", supabaseUser.email);
-                    existingUser = sameEmailUser;
-                }
-            }
-
-            // Si todavía no existe, crearlo
-            if (!existingUser) {
-                const { data: newUser, error: insertError } = await supabase
-                    .from("usuarios")
-                    .insert([
-                        {
-                            auth_id: supabaseUser.id,
-                            email: supabaseUser.email,
-                            nombre: supabaseUser.user_metadata.full_name || "",
-                            created_at: new Date(),
-                        },
-                    ])
-                    .select()
-                    .single();
-
-                if (insertError) throw insertError;
-                existingUser = newUser;
-            }
-
-            setUserData(existingUser);
+            if (error) throw error;
+            setUserData(newUser);
+        } else {
+            setUserData(existing);
+        }
         } catch (e) {
-            console.error("Error en ensureUserData:", e);
-            setUserData(null);
-        } finally {
-            setLoading(false);
+        console.error("Error creando usuario:", e.message);
         }
     };
 
-
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-900">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
-                    <p className="text-gray-300">Verificando sesión...</p>
-                </div>
+        <div className="flex items-center justify-center min-h-screen bg-gray-900">
+            <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+            <p className="text-gray-300">Verificando sesión...</p>
             </div>
+        </div>
         );
     }
 
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                userData,
-                loading,
-                refreshUserData: async () => {
-                    if (user) {
-                        const { data: updatedUserData } = await supabase
-                            .from("usuarios")
-                            .select("*")
-                            .eq("auth_id",  `"${user.id}"`)
-                            .single();
-                        setUserData(updatedUserData);
-                    }
-                },
-            }}
-        >
-            {children}
+        <AuthContext.Provider value={{ user, userData, loading }}>
+        {children}
         </AuthContext.Provider>
     );
-}
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth debe ser usado dentro de un AuthProvider");
     }
-    return context;
-};
+
+    export const useAuth = () => useContext(AuthContext);
