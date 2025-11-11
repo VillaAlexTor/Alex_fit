@@ -144,7 +144,7 @@ export default function Home() {
                                 : "Planifica tus comidas, optimiza tu rutina y alcanza tus metas con nuestra plataforma todo-en-uno diseñada para resultados reales."
                             }
                         </p>
-
+                        
                         {/* Features Grid */}
                         <div className="grid grid-cols-2 gap-4 mb-8 max-w-2xl">
                             {features.map((feature, index) => (
