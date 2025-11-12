@@ -121,8 +121,17 @@ export default function Rutina() {
 
         setLoading(true);
         try {
+            // Primero obtener el usuario_id correcto de la tabla usuarios
+            const { data: userData, error: userError } = await supabase
+                .from("usuarios")
+                .select("id")
+                .eq("auth_id", user.id)
+                .single();
+
+            if (userError) throw userError;
+
             const rutinaData = {
-                usuario_id: user.id,
+                usuario_id: userData.id, // ← ESTA ES LA CLAVE
                 dia: formData.dia,
                 tipo: formData.tipo,
                 nombre_rutina: formData.nombre_rutina,
@@ -153,14 +162,14 @@ export default function Rutina() {
             const { data } = await supabase
                 .from("rutinas")
                 .select("*")
-                .eq("usuario_id", user.id)
+                .eq("usuario_id", userData.id)
                 .order("fecha", { ascending: false });
 
             setRutinas(data || []);
             resetForm();
         } catch (error) {
             console.error("Error guardando rutina:", error.message);
-            alert("Error al guardar la rutina");
+            alert("Error al guardar la rutina: " + error.message);
         } finally {
             setLoading(false);
         }
