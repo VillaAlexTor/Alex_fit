@@ -1,8 +1,7 @@
-// Alex_fit/src/pag es/Dashboard/Rutina.jsx
+// Alex_fit/src/pages/Das hboard/Rutina.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { supabase } from "../../utils/supabaseClient";
 import { AuthContext } from "../../context/AuthContext.jsx";
-
 export default function Rutina() {
     const { user } = useContext(AuthContext);
     const [rutinas, setRutinas] = useState([]);
@@ -11,7 +10,6 @@ export default function Rutina() {
     const [editingRutina, setEditingRutina] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
     // Form state
     const [formData, setFormData] = useState({
         dia: "lunes",
