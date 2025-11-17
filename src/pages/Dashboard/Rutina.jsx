@@ -450,6 +450,222 @@ export default function Rutina() {
             {showForm && (
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg mb-6">
                     {/* ... (todo el formulario se mantiene igual) */}
+                    {/* Formulario de Rutina */}
+                    {showForm && (
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg mb-6">
+                            <h2 className="text-xl font-bold mb-4">
+                                {editingRutina ? "Editar Rutina" : "Nueva Rutina"}
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                {/* Día */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Día</label>
+                                    <select
+                                        value={formData.dia}
+                                        onChange={(e) => setFormData({ ...formData, dia: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-300 text-gray-900 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                    >
+                                        {diasSemana.map(dia => (
+                                            <option key={dia.value} value={dia.value}>
+                                                {dia.emoji} {dia.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Tipo */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                    <select
+                                        value={formData.tipo}
+                                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-300 text-gray-900 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                    >
+                                        {tiposEntrenamiento.map(tipo => (
+                                            <option key={tipo.value} value={tipo.value}>
+                                                {tipo.emoji} {tipo.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Fecha */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                                    <input
+                                        type="date"
+                                        value={formData.fecha}
+                                        onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-300 text-gray-900 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                    />
+                                </div>
+
+                                {/* Estado */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                    <select
+                                        value={formData.estado}
+                                        onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-300 text-gray-900 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                    >
+                                        <option value="pendiente">⏳ Pendiente</option>
+                                        <option value="completado">✅ Completado</option>
+                                        <option value="fallado">❌ Fallado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Nombre de Rutina */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de la Rutina</label>
+                                <input
+                                    type="text"
+                                    value={formData.nombre_rutina}
+                                    onChange={(e) => setFormData({ ...formData, nombre_rutina: e.target.value })}
+                                    placeholder="Ej: Rutina de pecho y tríceps"
+                                    className="w-full bg-gray-50 border border-gray-300 text-gray-900 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                />
+                            </div>
+
+                            {/* Ejercicios */}
+                            <div className="mb-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold">Ejercicios ({formData.ejercicios.length}/10)</h3>
+                                    <button
+                                        onClick={addEjercicio}
+                                        disabled={formData.ejercicios.length >= 10}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    >
+                                        + Agregar Ejercicio
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {formData.ejercicios.map((ejercicio, index) => (
+                                        <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 mb-3">
+                                                {/* Nombre */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Ejercicio</label>
+                                                    <input
+                                                        type="text"
+                                                        value={ejercicio.nombre}
+                                                        onChange={(e) => updateEjercicio(index, "nombre", e.target.value)}
+                                                        placeholder="Nombre del ejercicio"
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    />
+                                                </div>
+
+                                                {/* Series */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Series</label>
+                                                    <input
+                                                        type="text"
+                                                        value={ejercicio.series}
+                                                        onChange={(e) => updateEjercicio(index, "series", e.target.value)}
+                                                        placeholder="3-4"
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    />
+                                                </div>
+
+                                                {/* Repeticiones */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Reps</label>
+                                                    <input
+                                                        type="text"
+                                                        value={ejercicio.repeticiones}
+                                                        onChange={(e) => updateEjercicio(index, "repeticiones", e.target.value)}
+                                                        placeholder="8-12"
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    />
+                                                </div>
+
+                                                {/* Peso */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Peso</label>
+                                                    <input
+                                                        type="text"
+                                                        value={ejercicio.peso}
+                                                        onChange={(e) => updateEjercicio(index, "peso", e.target.value)}
+                                                        placeholder="60kg"
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    />
+                                                </div>
+
+                                                {/* Descanso */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Descanso</label>
+                                                    <input
+                                                        type="text"
+                                                        value={ejercicio.descanso}
+                                                        onChange={(e) => updateEjercicio(index, "descanso", e.target.value)}
+                                                        placeholder="60s"
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    />
+                                                </div>
+
+                                                {/* Estado */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Estado</label>
+                                                    <select
+                                                        value={ejercicio.estado}
+                                                        onChange={(e) => updateEjercicio(index, "estado", e.target.value)}
+                                                        className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                    >
+                                                        <option value="pendiente">Pendiente</option>
+                                                        <option value="completado">Completado</option>
+                                                        <option value="fallado">Fallado</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Notas */}
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Notas</label>
+                                                <input
+                                                    type="text"
+                                                    value={ejercicio.notas}
+                                                    onChange={(e) => updateEjercicio(index, "notas", e.target.value)}
+                                                    placeholder="Notas adicionales..."
+                                                    className="w-full bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                />
+                                            </div>
+
+                                            {/* Botón Eliminar */}
+                                            {formData.ejercicios.length > 1 && (
+                                                <div className="mt-2 text-right">
+                                                    <button
+                                                        onClick={() => removeEjercicio(index)}
+                                                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Botones de Acción */}
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={resetForm}
+                                    className="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={saveRutina}
+                                    disabled={loading}
+                                    className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    {loading ? "Guardando..." : (editingRutina ? "Actualizar" : "Guardar")}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
