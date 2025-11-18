@@ -1,4 +1,4 @@
-// Alex_fit/src/pages/Dasboard/Rutina.jsx
+// Alex_fit/src/pages/Dasboard/Rutin a.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { supabase } from "../../utils/supabaseClient";
 import { AuthContext } from "../../context/AuthContext.jsx";
